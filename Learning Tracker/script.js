@@ -1,5 +1,6 @@
 
 const logs = [];
+loadLogs();
 
 const form = document.querySelector('.log-form');
 form.addEventListener('submit', function (event) {
@@ -20,6 +21,7 @@ form.addEventListener('submit', function (event) {
     };
     logs.push(logData);
     addLog(logData);
+    saveLogs();
     updateSummary();
     form.reset();
 });
@@ -73,4 +75,19 @@ function updateSummary() {
     document.getElementById('solved-sum').textContent = solved;
     document.getElementById('submitted-sum').textContent = submitted;
     document.getElementById('in_progress-sum').textContent = inProgress;
+}
+
+function saveLogs() {
+    const learningTrackerLogs = JSON.stringify(logs);
+    localStorage.setItem('logs', learningTrackerLogs);
+}
+
+function loadLogs() {
+    const storedLogs = localStorage.getItem('logs');
+    if (storedLogs) {
+        const parsedLogs = JSON.parse(storedLogs);
+        parsedLogs.forEach(log => addLog(log));
+        logs.push(...parsedLogs);
+        updateSummary();
+    }
 }
