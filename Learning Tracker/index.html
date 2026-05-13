@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="style.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+  <title>Learning Tracker</title>
+</head>
+
+<body>
+  <header class="page-header">
+    <h1>Learning Tracker</h1>
+    <p>Track daily problems, tickets, and portfolio work</p>
+  </header>
+  <main>
+    <section class="summary-section">
+      <div class="summary-grid">
+        <div class="summary-card">
+          <p>Total Logs</p><strong id="total-sum">0</strong>
+        </div>
+        <div class="summary-card">
+          <p>Solved</p><strong id="solved-sum">0</strong>
+        </div>
+        <div class="summary-card">
+          <p>Submitted</p><strong id="submitted-sum">0</strong>
+        </div>
+        <div class="summary-card">
+          <p>In Progress</p><strong id="in_progress-sum">0</strong>
+        </div>
+      </div>
+    </section>
+    <section class="form-section">
+      <h2>Add New Log</h2>
+      <form class="log-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="date">Date : </label>
+            <input type="date" id="date" required />
+          </div>
+          <div class="form-group">
+            <label for="category">Category : </label>
+            <select id="category" required>
+              <option value="problem_encountered">Problem Encountered</option>
+              <option value="problem_solved">Problem Solved</option>
+              <option value="ticket">Ticket Activity</option>
+              <option value="portfolio">Portfolio Progress</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="title">Title : </label>
+            <input type="text" id="title" required placeholder="Example: User can't connect to network" />
+          </div>
+          <div class="form-group">
+            <label for="description">Description : </label>
+            <textarea id="description" required placeholder="Describe what happened"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="status">Status : </label>
+            <select id="status" required>
+              <option value="encountered">Encountered</option>
+              <option value="submitted">Submitted</option>
+              <option value="in_progress">In Progress</option>
+              <option value="solved">Solved</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reflection">Reflection : </label>
+            <textarea id="reflection" placeholder="What did you learn?"></textarea>
+          </div>
+          <div><button type="submit" class="form-btn">Add Log</button></div>
+        </div>
+      </form>
+    </section>
+    <section class="logs-section">
+      <h2>Recent Logs</h2>
+      <div class="logs-list">
+        <p class="empty-state-log">No logs to display. Add your first log!</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
