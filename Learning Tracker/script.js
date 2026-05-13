@@ -1,6 +1,5 @@
 
 const logs = [];
-loadLogs();
 
 const form = document.querySelector('.log-form');
 form.addEventListener('submit', function (event) {
@@ -12,6 +11,7 @@ form.addEventListener('submit', function (event) {
     const status = document.getElementById('status').value;
     const reflection = document.getElementById('reflection').value;
     const logData = {
+        id: Date.now(),
         date,
         category,
         title,
@@ -27,7 +27,6 @@ form.addEventListener('submit', function (event) {
 });
 
 function addLog(logData) {
-    const totalLogs = logs.length;
     const logsList = document.querySelector('.logs-list');
     const logCard = document.createElement('article');
     logCard.classList.add('log-card');
@@ -59,18 +58,33 @@ function addLog(logData) {
     if (emptyState) {
         emptyState.remove();
     }
-    if (totalLogs > 0) {
-        logsList.insertBefore(logCard, logsList.firstElementChild);
-    } else {
-        logsList.appendChild(logCard);
-    }
+    logsList.insertBefore(logCard, logsList.firstElementChild);
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.classList.add('delete-btn');
+    logCard.appendChild(deleteBtn);
+    deleteBtn.addEventListener('click', () => {
+        const deleted = deleteLog(logData.id);
+        if (deleted) {
+            saveLogs();
+            updateSummary();
+            logCard.remove();
+            if (logs.length === 0) {
+                const emptyState = document.createElement('p');
+                emptyState.classList.add('empty-state-log');
+                emptyState.textContent = 'No logs to display. Add your first log!';
+                logsList.appendChild(emptyState);
+            }
+        }
+    });
 }
 
 function updateSummary() {
-    let total = logs.length;
-    let solved = logs.filter(log => log.status === 'solved').length;
-    let submitted = logs.filter(log => log.status === 'submitted').length;
-    let inProgress = logs.filter(log => log.status === 'in_progress').length;
+    const total = logs.length;
+    const solved = logs.filter(log => log.status === 'solved').length;
+    const submitted = logs.filter(log => log.status === 'submitted').length;
+    const inProgress = logs.filter(log => log.status === 'in_progress').length;
     document.getElementById('total-sum').textContent = total;
     document.getElementById('solved-sum').textContent = solved;
     document.getElementById('submitted-sum').textContent = submitted;
@@ -79,15 +93,29 @@ function updateSummary() {
 
 function saveLogs() {
     const learningTrackerLogs = JSON.stringify(logs);
-    localStorage.setItem('logs', learningTrackerLogs);
+    localStorage.setItem('learningTrackerLogs', learningTrackerLogs);
 }
 
 function loadLogs() {
-    const storedLogs = localStorage.getItem('logs');
+    const storedLogs = localStorage.getItem('learningTrackerLogs');
     if (storedLogs) {
-        const parsedLogs = JSON.parse(storedLogs);
-        parsedLogs.forEach(log => addLog(log));
-        logs.push(...parsedLogs);
+        logs.push(...JSON.parse(storedLogs));
+        logs.forEach(log => addLog(log));
         updateSummary();
     }
 }
+
+function deleteLog(logId) {
+    const logIndex = logs.findIndex(log => log.id === logId);
+    if (logIndex !== -1) {
+        logs.splice(logIndex, 1);
+        saveLogs();
+        updateSummary();
+        return true;
+    } else {
+        return false;
+    }
+    
+}
+
+loadLogs();
