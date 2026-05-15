@@ -158,6 +158,15 @@ main{
     background-color: white;
     border: 1px solid lightgray;
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.filters-container{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
 }
 
 .log-card{
@@ -224,4 +233,9 @@ main{
     margin-bottom: 10px;
     margin-top: 0;
     font-size: 26px;
+}
+
+.editing {
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
 }

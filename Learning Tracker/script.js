@@ -18,6 +18,8 @@ function cancelEdit() {
 
     const cancelBtn = document.querySelector('.log-form .cancel-btn');
     if (cancelBtn) cancelBtn.remove();
+
+    saveAndRender();
 }
 
 form.addEventListener('submit', function (event) {
@@ -46,6 +48,9 @@ form.addEventListener('submit', function (event) {
 
     saveAndRender();
     form.reset();
+    
+    // Menghapus class 'editing' setelah submit
+    document.querySelectorAll('.log-card').forEach(card => card.classList.remove('editing'));
 });
 
 function addLog(logData) {
@@ -55,6 +60,14 @@ function addLog(logData) {
 
     const logCard = document.createElement('article');
     logCard.classList.add('log-card');
+    
+    // Menambahkan data-id agar elemen kartu mudah ditargetkan
+    logCard.dataset.id = logData.id;
+    
+    // Memastikan class tetap ada jika terjadi re-render saat mode edit aktif
+    if (currentlyEditingLogId === logData.id) {
+        logCard.classList.add('editing');
+    }
     
     logCard.innerHTML = `
         <h3>${logData.title}</h3>
@@ -128,6 +141,14 @@ function editLog(logId) {
             cancelBtn.addEventListener('click', cancelEdit);
             submitBtn.parentNode.insertBefore(cancelBtn, submitBtn.nextSibling);
         }
+
+        // Menghapus class 'editing' dari semua kartu, lalu menambahkan ke kartu yang dipilih
+        document.querySelectorAll('.log-card').forEach(card => card.classList.remove('editing'));
+        const activeCard = document.querySelector(`.log-card[data-id="${logId}"]`);
+        if (activeCard) {
+            activeCard.classList.add('editing');
+        }
+
         return true;
     }
     return false;
@@ -147,6 +168,9 @@ function renderLogs(logArray) {
 statusFilter.addEventListener('change', applyFilters);
 searchRecent.addEventListener('input', applyFilters);
 
+const sortRecent = document.getElementById('sort-recent');
+sortRecent.addEventListener('change', applyFilters);
+
 function applyFilters() {
     const selectedStatus = statusFilter.value;
     const searchTerm = searchRecent.value.toLowerCase();
@@ -157,7 +181,19 @@ function applyFilters() {
         return matchesStatus && matchesSearch;
     });
 
-    renderLogs(filteredLogs);
+    let sortOption = document.getElementById('sort-recent').value;
+    const sortedLogs = [...filteredLogs];
+    if (sortOption === 'date_desc') {
+        sortedLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (sortOption === 'date_asc') {
+        sortedLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (sortOption === 'title_asc') {
+        sortedLogs.sort((a, b) => b.title.localeCompare(a.title));
+    } else if (sortOption === 'title_desc') {
+        sortedLogs.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    renderLogs(sortedLogs);
 }
 
 loadLogs();
