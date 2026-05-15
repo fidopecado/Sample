@@ -1,107 +1,102 @@
-
 const logs = [];
+let currentlyEditingLogId = null;
 
 const form = document.querySelector('.log-form');
-form.addEventListener('submit', function (event) {
-    event.preventDefault();
-    const date = document.getElementById('date').value;
-    const category = document.getElementById('category').value;
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const status = document.getElementById('status').value;
-    const reflection = document.getElementById('reflection').value;
-    const logData = {
-        id: Date.now(),
-        date,
-        category,
-        title,
-        description,
-        status,
-        reflection
-    };
-    logs.push(logData);
-    addLog(logData);
+const statusFilter = document.getElementById('status-filter');
+const searchRecent = document.getElementById('search-recent');
+
+function saveAndRender() {
     saveLogs();
     updateSummary();
+    applyFilters();
+}
+
+function cancelEdit() {
+    currentlyEditingLogId = null;
+    form.reset();
+    document.querySelector('.log-form button[type="submit"]').textContent = 'Add Log';
+
+    const cancelBtn = document.querySelector('.log-form .cancel-btn');
+    if (cancelBtn) cancelBtn.remove();
+}
+
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const logData = {
+        date: document.getElementById('date').value,
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        status: document.getElementById('status').value,
+        reflection: document.getElementById('reflection').value
+    };
+
+    if (currentlyEditingLogId === null) {
+        logData.id = Date.now();
+        logs.push(logData);
+    } else {
+        const logIndex = logs.findIndex(log => log.id === currentlyEditingLogId);
+        if (logIndex !== -1) {
+            logs[logIndex] = { ...logs[logIndex], ...logData };
+        }
+        currentlyEditingLogId = null;
+        document.querySelector('.log-form button[type="submit"]').textContent = 'Add Log';
+    }
+
+    saveAndRender();
     form.reset();
 });
 
 function addLog(logData) {
     const logsList = document.querySelector('.logs-list');
+    const emptyState = document.querySelector('.empty-state-log');
+    if (emptyState) emptyState.remove();
+
     const logCard = document.createElement('article');
     logCard.classList.add('log-card');
-    const logTitle = document.createElement('h3');
-    const logMeta = document.createElement('div');
-    logMeta.classList.add('log-meta');
-    const logCategory = document.createElement('span');
-    logCategory.classList.add('log-category');
-    const logStatus = document.createElement('span');
-    logStatus.classList.add('log-status');
-    const logDate = document.createElement('span');
-    logDate.classList.add('log-date');
-    const logDescription = document.createElement('p');
-    const logReflection = document.createElement('p');
-    logTitle.textContent = logData.title;
-    logCategory.textContent = logData.category;
-    logStatus.textContent = logData.status;
-    logDate.textContent = logData.date;
-    logDescription.textContent = logData.description;
-    logReflection.textContent = logData.reflection;
-    logCard.appendChild(logTitle);
-    logMeta.appendChild(logCategory);
-    logMeta.appendChild(logStatus);
-    logMeta.appendChild(logDate);
-    logCard.appendChild(logMeta);
-    logCard.appendChild(logDescription);
-    logCard.appendChild(logReflection);
-    const emptyState = document.querySelector('.empty-state-log');
-    if (emptyState) {
-        emptyState.remove();
-    }
-    logsList.insertBefore(logCard, logsList.firstElementChild);
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.classList.add('delete-btn');
-    logCard.appendChild(deleteBtn);
-    deleteBtn.addEventListener('click', () => {
-        const deleted = deleteLog(logData.id);
-        if (deleted) {
-            saveLogs();
-            updateSummary();
-            logCard.remove();
-            if (logs.length === 0) {
-                const emptyState = document.createElement('p');
-                emptyState.classList.add('empty-state-log');
-                emptyState.textContent = 'No logs to display. Add your first log!';
-                logsList.appendChild(emptyState);
-            }
-        }
+    
+    logCard.innerHTML = `
+        <h3>${logData.title}</h3>
+        <div class="log-meta">
+            <span class="log-category">${logData.category}</span>
+            <span class="log-status">${logData.status}</span>
+            <span class="log-date">${logData.date}</span>
+        </div>
+        <p>${logData.description}</p>
+        <p>${logData.reflection}</p>
+        <button type="button" class="delete-btn">Delete</button>
+        <button type="button" class="edit-btn">Edit</button>
+    `;
+
+    logCard.querySelector('.delete-btn').addEventListener('click', () => {
+        if (deleteLog(logData.id)) saveAndRender();
     });
+
+    logCard.querySelector('.edit-btn').addEventListener('click', () => {
+        editLog(logData.id); 
+    });
+
+    logsList.insertBefore(logCard, logsList.firstElementChild);
 }
 
 function updateSummary() {
-    const total = logs.length;
-    const solved = logs.filter(log => log.status === 'solved').length;
-    const submitted = logs.filter(log => log.status === 'submitted').length;
-    const inProgress = logs.filter(log => log.status === 'in_progress').length;
-    document.getElementById('total-sum').textContent = total;
-    document.getElementById('solved-sum').textContent = solved;
-    document.getElementById('submitted-sum').textContent = submitted;
-    document.getElementById('in_progress-sum').textContent = inProgress;
+    document.getElementById('total-sum').textContent = logs.length;
+    document.getElementById('solved-sum').textContent = logs.filter(log => log.status === 'solved').length;
+    document.getElementById('submitted-sum').textContent = logs.filter(log => log.status === 'submitted').length;
+    document.getElementById('in_progress-sum').textContent = logs.filter(log => log.status === 'in_progress').length;
 }
 
 function saveLogs() {
-    const learningTrackerLogs = JSON.stringify(logs);
-    localStorage.setItem('learningTrackerLogs', learningTrackerLogs);
+    localStorage.setItem('learningTrackerLogs', JSON.stringify(logs));
 }
 
 function loadLogs() {
     const storedLogs = localStorage.getItem('learningTrackerLogs');
     if (storedLogs) {
         logs.push(...JSON.parse(storedLogs));
-        logs.forEach(log => addLog(log));
         updateSummary();
+        applyFilters();
     }
 }
 
@@ -109,13 +104,60 @@ function deleteLog(logId) {
     const logIndex = logs.findIndex(log => log.id === logId);
     if (logIndex !== -1) {
         logs.splice(logIndex, 1);
-        saveLogs();
-        updateSummary();
         return true;
-    } else {
-        return false;
     }
+    return false;
+}
+
+function editLog(logId) {
+    const log = logs.find(log => log.id === logId);
+    if (log) {
+        currentlyEditingLogId = logId;
+        const fields = ['date', 'category', 'title', 'description', 'status', 'reflection'];
+        fields.forEach(field => document.getElementById(field).value = log[field]);
+        
+        const submitBtn = document.querySelector('.log-form button[type="submit"]');
+        submitBtn.textContent = 'Update Log';
+
+        if (!document.querySelector('.log-form .cancel-btn')) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.id = 'cancel-btn';
+            cancelBtn.type = 'button';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.classList.add('cancel-btn');
+            cancelBtn.addEventListener('click', cancelEdit);
+            submitBtn.parentNode.insertBefore(cancelBtn, submitBtn.nextSibling);
+        }
+        return true;
+    }
+    return false;
+}
+
+function renderLogs(logArray) {
+    const logsList = document.querySelector('.logs-list');
+    logsList.innerHTML = '';
     
+    if (logArray.length === 0) {
+        logsList.innerHTML = '<p class="empty-state-log">No logs to display. Add your first log!</p>';
+    } else {
+        logArray.forEach(log => addLog(log));
+    }
+}
+
+statusFilter.addEventListener('change', applyFilters);
+searchRecent.addEventListener('input', applyFilters);
+
+function applyFilters() {
+    const selectedStatus = statusFilter.value;
+    const searchTerm = searchRecent.value.toLowerCase();
+
+    const filteredLogs = logs.filter(log => {
+        const matchesStatus = selectedStatus === "all" || log.status === selectedStatus;
+        const matchesSearch = !searchTerm || log.description.toLowerCase().includes(searchTerm) || log.reflection.toLowerCase().includes(searchTerm) || log.title.toLowerCase().includes(searchTerm);
+        return matchesStatus && matchesSearch;
+    });
+
+    renderLogs(filteredLogs);
 }
 
 loadLogs();

@@ -9,6 +9,9 @@ A simple web app to track daily learning logs, ticket activities, problems encou
 - Newest logs appear first
 - Empty state when there are no logs
 - Summary counters for total, solved, and submitted logs
+- Persist logs using localstorage
+- Delete and Edit Logs
+- Filter logs by status and search keyword
  
 ## Tech Stack
 - HTML
@@ -19,8 +22,4 @@ A simple web app to track daily learning logs, ticket activities, problems encou
 Version 1 focuses on basic frontend structure and DOM manipulation.
  
 ## Future Improvements
-- Save logs using localStorage
-- Add delete button
-- Add filter by category/status
-- Add search
 - Add charts

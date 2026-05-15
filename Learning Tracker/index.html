@@ -78,6 +78,19 @@
     </section>
     <section class="logs-section">
       <h2>Recent Logs</h2>
+      <div class="filter-section" class="filter-section">
+        <label for="status-filter" class="form-label">Filter by Status : </label>
+        <select id="status-filter" class="status-filter">
+          <option value="all">All</option>
+          <option value="encountered">Encountered</option>
+          <option value="submitted">Submitted</option>
+          <option value="in_progress">In Progress</option>
+          <option value="solved">Solved</option>
+        </select>
+      </div>
+      <div class="search-meta">
+        <input type="text" id="search-recent" class="search-recent" placeholder="Search logs..." />
+      </div>
       <div class="logs-list">
         <p class="empty-state-log">No logs to display. Add your first log!</p>
       </div>
